@@ -1,5 +1,6 @@
-use pyvalleys package
+use with pyvalleys package
 
+```
 folder of data
     usgs_10m/
         <huc8>_dem.tif
@@ -12,14 +13,18 @@ folder of outputs:
             slope.tif,
             curvature.tif,
             …
-    valley_floors-<date>/
-        params.toml
+    valley_floors>/
         <huc8>_valley_floors.shp
+```
 
 
+```
 01_dl_huc8.py
 02_extract_valley_floors.py
+```
 
-load config
-iterate through huc8_dem, huc8_flowline:
-    extract_valley_floors -> terrain attributes, valley_floor
+todo:
+- [] add snakefile
+- [] move nhd preprocessing from pyvalleys to here
+- [] add mask for regions we don't want to model (non river valleys - e.g central valley, death valley ...)
+- [] run on state
