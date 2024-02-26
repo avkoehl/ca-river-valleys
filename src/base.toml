@@ -1,0 +1,11 @@
+tolerance = 20 # for the simplification of the flowline
+xs_spacing = 50 # spacing between cross-sections
+xs_width = 1000  # total width is twice this value
+xs_point_spacing = 10 # spacing of points along cross-sections
+quantile = 0.75 # sets the hand threshold
+buffer = 2 # add to hand threshold 
+slope_threshold = 14.1 # a little more than 25% slope
+
+# parameters for identifying key points on cross section
+peak_threshold = 0.002 # minimum height of peak to be considered a keypoint on cross section
+bp_slope_threshold = 14.1 # slope threshold for identifying breakpoints
