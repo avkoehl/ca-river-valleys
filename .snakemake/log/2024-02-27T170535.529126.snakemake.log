@@ -1,7 +1,0 @@
-Building DAG of jobs...
-MissingInputException in rule download_data in file /Users/arthurkoehl/programs/pasternack/river-valleys/Snakefile, line 27:
-Missing input files for rule download_data:
-    output: data/1805005/dem.tif
-    wildcards: hucid=1805005
-    affected files:
-        1805005

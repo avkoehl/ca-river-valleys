@@ -1,3 +1,0 @@
-SyntaxError:
-Input and output files have to be specified as strings or lists of strings.
-  File "/Users/arthurkoehl/programs/pasternack/river-valleys/Snakefile", line 25, in <module>
