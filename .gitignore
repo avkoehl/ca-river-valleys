@@ -12,6 +12,8 @@ cache/
 [._]ss[a-gi-z]
 [._]sw[a-p]
 
+# snakemake
+.snakemake/
 
 # R
 *.rds

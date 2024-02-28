@@ -1,44 +1,16 @@
-poetry install  
-
-poetry run snakemake
-
-
------
-use with pyvalleys package
-
 ```
-folder of data
-    usgs_10m/
-        <huc8>_dem.tif
-    nhd_mr/
-        <huc8>_flowlines-mr.shp
+# data/
+    # {hucid}/
+    #     dem_raw.tif
+    #     flowlines_raw.tif
+    #     dem.tif
+    #     flowlines.tif
+    #     valley_floors.shp
+    #     terrain_attributes/
 
-folder of outputs:
-    terrain_attributes/
-        <huc8>/
-            slope.tif,
-            curvature.tif,
-            …
-    valley_floors>/
-        <huc8>_valley_floors.shp
+# workflow:
+#       download dem, flowline (hucid)
+#       preprocess dem (dem)
+#       preprocess flowline (flowline)
+#       extract valleys (preprocessed_dem, preprocessed_flowline, config)
 ```
-
-
-```
-01_dl_huc8.py
-02_extract_valley_floors.py
-```
-
-todo:
-- [] add snakefile
-- [] move nhd preprocessing from pyvalleys to here
-- [] add mask for regions we don't want to model (non river valleys - e.g central valley, death valley ...)
-- [] run on state
-
-----
-sample workflow
-
-download 5 huc12s for california
-ocean mask
-nhd filter
-get valleys

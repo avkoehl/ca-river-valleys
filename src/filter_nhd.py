@@ -4,7 +4,7 @@ import geopandas as gpd
 
 from utils import setup_output
 
-def filter_nhd_flowlines(flowlines):
+def filter_nhd_flowlines(nhd_network):
     # remove small headwater streams < 1km and non-river features
     # check for required columns
     required = ['StartFlag', 'FTYPE', 'geometry', 'LENGTHKM']
@@ -17,11 +17,11 @@ def filter_nhd_flowlines(flowlines):
     nhd_network = nhd_network.loc[~((nhd_network['StartFlag'] == 1) & (nhd_network['LENGTHKM'] < 1))]
     return nhd_network
 
-def main()
+def main():
     nhd_file = sys.argv[1]
     ofile = sys.argv[2]
 
-    flowlines = gpd.from_file(nhd_file)
+    flowlines = gpd.read_file(nhd_file)
     flowlines = filter_nhd_flowlines(flowlines)
 
     setup_output(ofile)

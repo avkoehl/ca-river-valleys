@@ -25,3 +25,6 @@ def main():
 
     setup_output(ofile)
     dem.rio.to_raster(ofile)
+
+if __name__ == "__main__":
+    main()
