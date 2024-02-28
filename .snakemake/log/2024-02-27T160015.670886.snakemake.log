@@ -1,0 +1,3 @@
+TypeError in file /Users/arthurkoehl/programs/pasternack/river-valleys/Snakefile, line 24:
+'list' object is not callable
+  File "/Users/arthurkoehl/programs/pasternack/river-valleys/Snakefile", line 24, in <module>

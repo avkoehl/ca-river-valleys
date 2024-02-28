@@ -1,0 +1,5 @@
+Building DAG of jobs...
+MissingInputException in rule all in file /Users/arthurkoehl/programs/pasternack/river-valleys/Snakefile, line 23:
+Missing input files for rule all:
+    affected files:
+        data/1805005/1805005_dem_raw.tif

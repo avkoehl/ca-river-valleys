@@ -1,3 +1,9 @@
+poetry install  
+
+poetry run snakemake
+
+
+-----
 use with pyvalleys package
 
 ```
@@ -28,3 +34,11 @@ todo:
 - [] move nhd preprocessing from pyvalleys to here
 - [] add mask for regions we don't want to model (non river valleys - e.g central valley, death valley ...)
 - [] run on state
+
+----
+sample workflow
+
+download 5 huc12s for california
+ocean mask
+nhd filter
+get valleys

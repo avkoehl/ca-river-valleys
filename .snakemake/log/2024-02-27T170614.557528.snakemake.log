@@ -1,0 +1,24 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job              count
+-------------  -------
+all                  1
+download_data        1
+total                2
+
+Select jobs to execute...
+
+[Tue Feb 27 17:06:14 2024]
+rule download_data:
+    output: data/1805005/dem.tif
+    jobid: 1
+    reason: Missing output files: data/1805005/dem.tif
+    wildcards: hucid=1805005
+    resources: tmpdir=/var/folders/l2/9h6xd6f555321vx3s_ttqb_80000gn/T
+
+RuleException in rule download_data in file /Users/arthurkoehl/programs/pasternack/river-valleys/Snakefile, line 27:
+NameError: The name 'hucid' is unknown in this context. Did you mean 'wildcards.hucid'?, when formatting the following:
+touch data/{hucid}/dem.tif
