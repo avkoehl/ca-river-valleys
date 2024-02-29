@@ -1,9 +1,20 @@
 # Snakefile
-HUCIDS = ['1801010902', '1801010805']
+CUSTOM_HUCIDS = ['1801010902']
+
+DEMO_HUCIDS = ['1801010902', '1605030102']
+CA_HUC8_HUCIDS= ['1801010902', '1801010805']
 
 rule all:
     input: 
-        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=HUCIDS)
+        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=CA_HUC8_HUCIDS)
+
+rule demo_all:
+    input:
+        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=DEMO_HUCIDS)
+
+rule custom_all:
+    input:
+        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=CUSTOM_HUCIDS)
 
 rule download_data:
     params:
