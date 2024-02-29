@@ -3734,7 +3734,7 @@ xarray = "^2024.2.0"
 type = "git"
 url = "ssh://git@github.com/avkoehl/valleys.git"
 reference = "main"
-resolved_reference = "0c424dee8aa91686cfc7158b9130e5f144af7fd2"
+resolved_reference = "4d5d849e461557948b6a3d7db2e72f4fd9c40bd8"
 
 [[package]]
 name = "pywin32"
