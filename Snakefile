@@ -42,5 +42,5 @@ rule extract_valleys:
          terrain_dir = directory("data/{hucid}/terrain_attributes/"),
          valley_floors = "data/{hucid}/{hucid}-valley_floors.shp"
      shell:
-         "poetry run python src/valley_floors.py {input.dem} {input.network} {params.wbt} {params.config} {output.terrain_dir} {output.valley_floors}"
+         "poetry run python -m pyvalleys {input.dem} {input.network} {params.config} {params.wbt} {output.terrain_dir} {output.valley_floors}"
 
