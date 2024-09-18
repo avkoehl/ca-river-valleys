@@ -6,15 +6,15 @@ CA_HUC8_HUCIDS= ['1801010902', '1801010805']
 
 rule all:
     input: 
-        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=CA_HUC8_HUCIDS)
+        expand("data/{hucid}/{hucid}-floors.tif", hucid=CA_HUC8_HUCIDS)
 
 rule demo_all:
     input:
-        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=DEMO_HUCIDS)
+        expand("data/{hucid}/{hucid}-floors.tif", hucid=DEMO_HUCIDS)
 
 rule custom_all:
     input:
-        expand("data/{hucid}/{hucid}-valley_floors.shp", hucid=CUSTOM_HUCIDS)
+        expand("data/{hucid}/{hucid}-floors.tif", hucid=CUSTOM_HUCIDS)
 
 rule download_data:
     params:
@@ -47,11 +47,11 @@ rule extract_valleys:
          dem = "data/{hucid}/{hucid}-dem.tif",
          network = "data/{hucid}/{hucid}-flowlines.shp"
      params:
-         config = "configs/base.toml",
+         param = "configs/params.toml",
          wbt = os.path.expanduser("~/opt/WBT")
      output:
-         terrain_dir = directory("data/{hucid}/terrain_attributes/"),
-         valley_floors = "data/{hucid}/{hucid}-valley_floors.shp"
+         terrain_dir = directory("data/{hucid}/derived/"),
+         ofile = directory("data/{hucid}/{hucid}-floors.tif/"),
      shell:
-         "poetry run python -m pyvalleys {input.dem} {input.network} {params.config} {params.wbt} {output.terrain_dir} {output.valley_floors}"
+         "poetry run python -m valleyfloor --dem {input.dem} --flowlines {input.network} --param {params.param}  --wbt {params.wbt} --terrain_dir {output.terrain_dir} --ofile {output.ofile}" 
 
