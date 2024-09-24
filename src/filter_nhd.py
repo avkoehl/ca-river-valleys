@@ -15,6 +15,9 @@ def filter_nhd_flowlines(nhd_network):
     # filter flow lines
     nhd_network = nhd_network.loc[nhd_network['FTYPE'] == 'StreamRiver']
     nhd_network = nhd_network.loc[~((nhd_network['StartFlag'] == 1) & (nhd_network['LENGTHKM'] < 1))]
+
+    # keep only if Linestring
+    nhd_network = nhd_network[nhd_network.geometry.type == 'LineString']
     return nhd_network
 
 def main():
