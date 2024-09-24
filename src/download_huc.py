@@ -14,7 +14,6 @@ def get_dem_and_flowlines(hucid, layer):
     boundary = wbd.byids(layer, hucid)
     boundary_reprojected = boundary.to_crs(3310)
 
-    #dem = py3dep.get_map("DEM", boundary.geometry.iloc[0], resolution=10, geo_crs=boundary.crs, crs=4326)
     dem = py3dep.static_3dep_dem(boundary.geometry.iloc[0], resolution=10, crs=4326)
     dem = dem.rio.reproject(3310)
 

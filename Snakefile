@@ -1,20 +1,16 @@
 # Snakefile
-CUSTOM_HUCIDS = ['1805000203']
+DEMO_HUCIDS = ['180500040803', '180500050303', '180600060101', '180901020208', '180201280202']
 
-DEMO_HUCIDS = ['1801010902', '1605030102']
-CA_HUC8_HUCIDS= ['1801010902', '1801010805']
+HUCIDS= ['1801010902', '1801010805']
 
 rule all:
     input: 
-        expand("data/{hucid}/{hucid}-floors.tif", hucid=CA_HUC8_HUCIDS)
+        expand("data/{hucid}/{hucid}-floors.tif", hucid=HUCIDS)
 
 rule demo_all:
     input:
         expand("data/{hucid}/{hucid}-floors.tif", hucid=DEMO_HUCIDS)
 
-rule custom_all:
-    input:
-        expand("data/{hucid}/{hucid}-floors.tif", hucid=CUSTOM_HUCIDS)
 
 rule download_data:
     params:
@@ -48,10 +44,11 @@ rule extract_valleys:
          network = "data/{hucid}/{hucid}-flowlines.shp"
      params:
          param = "configs/params.toml",
-         wbt = os.path.expanduser("~/opt/WBT")
+         wbt = os.path.expanduser("~/opt/WBT"),
+	 log_file = "data/{hucid}/run.log"
      output:
          terrain_dir = directory("data/{hucid}/derived/"),
-         ofile = directory("data/{hucid}/{hucid}-floors.tif/"),
+         ofile = "data/{hucid}/{hucid}-floors.tif/"
      shell:
-         "poetry run python -m valleyfloor --dem {input.dem} --flowlines {input.network} --param {params.param}  --wbt {params.wbt} --terrain_dir {output.terrain_dir} --ofile {output.ofile}" 
+         "poetry run python -m valleyfloor --dem {input.dem} --flowlines {input.network} --param {params.param}  --wbt {params.wbt} --terrain_dir {output.terrain_dir} --ofile {output.ofile} --enable-logging --log-file {params.log_file}" 
 
