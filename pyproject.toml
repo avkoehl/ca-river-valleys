@@ -10,7 +10,7 @@ python = "^3.10"
 pygeohydro = "^0.16.0"
 pynhd = "^0.16.2"
 shapely = "^2.0.3"
-valleyfloor = { git = "ssh://git@github.com/avkoehl/valleyfloor.git", branch = "main" }
+valleyx = { git = "ssh://git@github.com/avkoehl/valleyx.git", branch = "main" }
 py3dep = "^0.16.2"
 pulp = "2.7.0" # for snakemake to work https://github.com/snakemake/snakemake/issues/2607
 snakemake = "7.32.4" # if snake > 8 need python >3.11
