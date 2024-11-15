@@ -1,0 +1,17 @@
+# Output configuration
+output_base: '../outputs/'
+
+# HUC ID configuration
+# Uncomment and modify to process specific HUC IDs
+# huc_ids:
+#   - '1805000203'
+#   - '180500040803'
+#   - '180500050303'
+
+# If huc_ids is not specified, random sampling will be used
+sample_size: 5
+random_seed: 14
+
+# Processing configuration
+params_file: 'configs/params_10m.toml'
+disable_hyriver_cache: true
