@@ -17,7 +17,7 @@ HUCIDS= ['1805000203']
 
 rule all:
     input: 
-        expand(output_base + "20241113/{hucid}-floors.tif", hucid=sample)
+        expand(output_base + "floors/{hucid}-floors.tif", hucid=sample)
 
 rule demo_all:
     input:
@@ -57,10 +57,11 @@ rule extract_valleys:
      params:
          param_file = "configs/params_10m.toml",
 	       working_dir = output_base + "{hucid}_working_dir",
-	       flowlines_ofile = output_base + "20241113/{hucid}-flowlines.shp",
-	       log_file = output_base + "20241113/{hucid}-run.log"
+	       flowlines_ofile = output_base + "floors/{hucid}-flowlines.shp",
+	       wp_ofile = output_base + "floors/{hucid}-wp.shp",
+	       log_file = output_base + "floors/{hucid}-run.log"
      output:
-	       output_base + "20241113/{hucid}-floors.tif"
+	       output_base + "floors/{hucid}-floors.tif"
      shell:
-         "poetry run python -m valleyx --dem_file {input.dem} --flowlines_file {input.network} --working_dir {params.working_dir} --param_file {params.param_file} --floor_ofile {output} --flowlines_ofile {params.flowlines_ofile} --enable_logging --log_file {params.log_file}" 
+         "poetry run python -m valleyx --dem_file {input.dem} --flowlines_file {input.network} --working_dir {params.working_dir} --param_file {params.param_file} --floor_ofile {output} --flowlines_ofile {params.flowlines_ofile} --wp_ofile {params.wp_ofile} --enable_logging --log_file {params.log_file}" 
 
