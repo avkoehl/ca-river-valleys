@@ -62,7 +62,7 @@ rule download_data:
 rule preprocess_dem:
     input:
         dem_path = output_base / "{hucid}/{hucid}-dem_raw.tif",
-        land_shapefile = "california_mask/California.shp"
+        land_shapefile = "./data/california_mask/California.shp"
     output:
         output_base / "{hucid}/{hucid}-dem.tif"
     shell:

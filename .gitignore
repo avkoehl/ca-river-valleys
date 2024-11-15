@@ -1,6 +1,6 @@
 # Project Directory Structure
 configs/
-data/
+data/huc_manifest/
 outputs/
 *.pdf
 cache/

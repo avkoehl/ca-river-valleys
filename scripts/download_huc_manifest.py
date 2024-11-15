@@ -49,8 +49,8 @@ def download_huc_manifest(levels):
 
 
 if __name__ == "__main__":
-    shapefile = "../data/huc_manifest.shp"
-    csvfile = "../data/huc_manifest.csv"
+    shapefile = "../data/huc_manifest/huc_manifest.shp"
+    csvfile = "../data/huc_manifest/huc_manifest.csv"
     levels = [6,8,10,12]
     df, gdf = download_huc_manifest(levels)
     df.to_csv(csvfile)
