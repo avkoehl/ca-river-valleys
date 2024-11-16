@@ -1,3 +1,5 @@
+import os 
+
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -52,6 +54,12 @@ def download_huc_manifest(levels):
 if __name__ == "__main__":
     shapefile = "../data/huc_manifest/huc_manifest.shp"
     csvfile = "../data/huc_manifest/huc_manifest.csv"
+
+    if not os.path.exists(os.path.dirname(shapefile)):
+        os.makedirs(os.path.dirname(shapefile))
+    if not os.path.exists(os.path.dirname(csvfile)):
+        os.makedirs(os.path.dirname(csvfile))
+    
     levels = [6,8,10,12]
     df, gdf = download_huc_manifest(levels)
     df.to_csv(csvfile)
