@@ -43,6 +43,7 @@ def download_huc_manifest(levels):
     df = pd.DataFrame.from_records(records)
     gdf = gpd.GeoDataFrame(df, crs=huc2_boundaries.crs, geometry='geometry')
     df = df[['hucid', 'level']]
+    df = df.drop_duplicates() # since boundaries are exploded they may be duplicated
     return df, gdf
 
 
