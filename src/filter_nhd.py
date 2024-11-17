@@ -9,19 +9,19 @@ def filter_nhd_flowlines(nhd_network):
     # remove small headwater streams < 1km and non-river features
     # check for required columns
     # come back to this
-    required = ['FTYPE', 'geometry', 'LENGTHKM']
+    #required = ['FTYPE', 'geometry', 'LENGTHKM']
 
-    if not all([col in nhd_network.columns for col in required]):
-        raise ValueError('Input NHDPlus dataset must contain columns: FTYPE, geometry, LENGTHKM')
+    #if not all([col in nhd_network.columns for col in required]):
+    #    raise ValueError('Input NHDPlus dataset must contain columns: FTYPE, geometry, LENGTHKM')
 
     # filter flow lines
-    ftype = nhd_network['FTYPE']
-    if pd.api.types.is_numeric_dtype(ftype):
-        nhd_network = nhd_network.loc[ftype == 460]
-    else:
-        nhd_network = nhd_network.loc[ftype == 'StreamRiver']
+    #ftype = nhd_network['FTYPE']
+    #if pd.api.types.is_numeric_dtype(ftype):
+    #    nhd_network = nhd_network.loc[ftype == 460]
+    #else:
+    #    nhd_network = nhd_network.loc[ftype == 'StreamRiver']
 
-    nhd_network = nhd_network.loc[nhd_network['LENGTHKM'] > 1]
+    #nhd_network = nhd_network.loc[nhd_network['LENGTHKM'] > 1]
 
     # keep only if Linestring
     nhd_network = nhd_network[nhd_network.geometry.type == 'LineString']
