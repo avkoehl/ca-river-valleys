@@ -1,6 +1,7 @@
 import os
 import sys
 
+import rasterio
 from pygeohydro import WBD
 from pygeohydro import huc_wb_full
 from pynhd import NHD
@@ -15,7 +16,7 @@ def get_dem_and_flowlines(hucid, layer):
     boundary_reprojected = boundary.to_crs(3310)
 
     dem = py3dep.static_3dep_dem(boundary.geometry.iloc[0], resolution=10, crs=4326)
-    dem = dem.rio.reproject(3310)
+    dem = dem.rio.reproject(3310, resampling=rasterio.enums.Resampling.bilinear)
 
     nhd_mr = NHD("flowline_mr")
     flowlines_mr = nhd_mr.bygeom(boundary.geometry.iloc[0].bounds)
