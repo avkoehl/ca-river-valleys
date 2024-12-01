@@ -1,6 +1,7 @@
 import os
 import sys
 
+import rasterio
 from pygeohydro import WBD
 from pygeohydro import huc_wb_full
 from pynhd import NHD
