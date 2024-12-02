@@ -30,7 +30,7 @@ def get_dem_and_flowlines(hucid, layer):
     return dem, flowlines_mr
 
 def retry_on_smaller(boundary):
-    bbox = geom.bounds
+    bbox = boundary.bounds
     bbox['mid_x'] = (bbox['minx'] + bbox['maxx']) / 2
     bbox['mid_y'] = (bbox['miny'] + bbox['maxy']) / 2
     
