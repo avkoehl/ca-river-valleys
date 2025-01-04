@@ -21,7 +21,7 @@ def main():
     land_geom = gpd.read_file(land_file)
     land_geom = land_geom.to_crs(dem.rio.crs)
 
-    dem = dem.rio.clip(land_geom.geometry.apply(mapping))
+    #dem = dem.rio.clip(land_geom.geometry.apply(mapping))
 
     setup_output(ofile)
     dem.rio.to_raster(ofile)

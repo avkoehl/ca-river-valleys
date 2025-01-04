@@ -1,5 +1,5 @@
 # Output configuration
-output_base: '../outputs/'
+output_base: '/dsl/valleys/cleanup/'
 
 # HUC Configuration - USE ONLY ONE OF THE FOLLOWING THREE OPTIONS:
 
@@ -14,10 +14,10 @@ output_base: '../outputs/'
 
 # Option 3: HUC level with filtering and sampling
 huc_level: 'huc10'          # One of: huc6, huc8, huc10, huc12
-huc_filter: '1805'          # Optional: Filter HUCs by prefix
+huc_filter: '18'          # Optional: Filter HUCs by prefix
 #sample_size: 5              # Optional: Number of HUCs to sample
 #random_seed: 14             # Optional: Random seed for sampling
 
 # Processing configuration
-params_file: 'configs/params_10m.toml'
+params_file: 'params/params_10m.toml'
 disable_hyriver_cache: true

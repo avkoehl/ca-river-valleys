@@ -1,0 +1,33 @@
+# process topography params
+sigma = 1.5
+
+# reach segmentation params
+hand_threshold = 10
+spacing = 20
+minsize = 300
+window = 5
+
+# xsection params:
+line_spacing = 30
+line_width = 600
+line_max_width=600
+point_spacing = 10
+
+# profile preprocessing params
+min_hand_jump = 15
+ratio = 2.5
+min_distance = 20
+min_peak_prominence = 10
+
+# max ascent params
+num_cells = 8
+
+# slope thresholds 
+foundation_slope = 5
+max_floor_slope = 14
+slope_threshold = 10
+
+# floor threhsolds
+buffer = 1
+min_points = 15
+percentile = 0.80

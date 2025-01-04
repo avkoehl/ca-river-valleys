@@ -6,6 +6,8 @@ from pygeohydro import WBD
 from pygeohydro import huc_wb_full
 from pynhd import NHD
 import py3dep
+import pandas as pd
+from rioxarray.merge import merge_arrays
 
 from utils import setup_output
 

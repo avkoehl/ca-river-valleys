@@ -11,7 +11,7 @@ configfile: "config.yaml"
 
 # Set default values if not in config
 config.setdefault('output_base', '../outputs/')
-config.setdefault('params_file', 'configs/params_10m.toml')
+config.setdefault('params_file', 'params/params_10m.toml')
 
 # Ensure output base directory exists
 output_base = Path(config['output_base'])
