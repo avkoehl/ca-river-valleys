@@ -131,6 +131,8 @@ rule download_data:
     output:
         dem = output_base / "{hucid}/{hucid}-dem.tif",
         flowlines = output_base / "{hucid}/{hucid}-flowlines_raw.shp"
+    resources:
+        download_slots=1
     shell:
         "poetry run python src/download_huc.py {params.hucid} {output.dem} {output.flowlines}"
 
