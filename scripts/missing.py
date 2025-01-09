@@ -5,7 +5,7 @@ from glob import glob
 import pandas as pd
 
 
-floors_dir = "../../20241231-CA_floors/"
+floors_dir = "/dsl/valleys/cleanup/floors/"
 manifest_file = "../data/huc_manifest/huc_manifest.csv"
 
 hucs = pd.read_csv(manifest_file)
