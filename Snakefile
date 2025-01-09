@@ -135,6 +135,10 @@ rule download_data:
     shell:
         "poetry run python src/download_huc.py {params.hucid} {output.dem} {output.flowlines}"
 
+#  Note that at the moment this is a placeholder, the actual clipping is
+#  commented out in ocean_mask.py This is because it made more sense to do this
+#  clipping after the fact so ignore this. Therefore this step effectively just
+#  copies the {hucid}-dem.raw.tif file and saves it as {hucid}-dem.tif.
 rule preprocess_dem:
     input:
         dem_path = output_base / "{hucid}/{hucid}-dem_raw.tif",
