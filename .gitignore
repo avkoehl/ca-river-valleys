@@ -1,6 +1,6 @@
 # Project Directory Structure
+my_config.yaml
 configs/
-data/huc_manifest/
 outputs/
 *.pdf
 cache/
