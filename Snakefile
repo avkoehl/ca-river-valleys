@@ -29,7 +29,14 @@ def get_output_paths(wildcards, prefix=""):
 
 ## Rules
 
-rule all:
+rule initialize_whitebox:
+    output: 
+        touch("whitebox_initialized.flag")
+    shell:
+        "poetry run python src/init_whitebox.py"
+
+
+rule extract_all:
     input:
         expand(output_base / "floors" / "{hucid}-floors.tif", hucid=HUCIDS)
 
@@ -86,6 +93,7 @@ rule extract_valleys:
     input:
         dem = output_base / "{hucid}/{hucid}-dem.tif",
         network = output_base / "{hucid}/{hucid}-flowlines.shp"
+        whitebox_init = "whitebox_initialized.flag"
     params:
         param_file = lambda wildcards: config['params_file'],
         working_dir = lambda wildcards: get_output_paths(wildcards)['working_dir'],

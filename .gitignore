@@ -4,6 +4,7 @@ configs/
 outputs/
 *.pdf
 cache/
+whitebox_initialized.flag
 
 # vim
 [._]*.s[a-v][a-z]

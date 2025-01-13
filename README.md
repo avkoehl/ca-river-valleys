@@ -91,9 +91,16 @@ poetry run snakemake prep_all --configfile my_config.yaml -j 10 --resources down
 ```
 
 ### 2. Valley Floor Extraction
-Process the downloaded data:
+
+If its the first time, initialize whitebox tools:
 ```bash
-poetry run snakemake all --configfile my_config.yaml -j 10
+poetry run snakemake initialize_whitebox
+```
+
+Process the downloaded data:
+
+```bash
+poetry run snakemake extract_all --configfile my_config.yaml -j 10
 ```
 
 ### 3. Results Processing
