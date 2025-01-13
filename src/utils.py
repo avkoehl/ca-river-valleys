@@ -1,6 +1,13 @@
+import os
+
 import numpy as np
 import pandas as pd
 
+
+def setup_output(filename):
+    directory = os.path.dirname(filename)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 def filter_huc10_list(hucs, prefix=None, sample_size=None, random_seed=None):
     if prefix is not None:
