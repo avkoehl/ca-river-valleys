@@ -21,7 +21,7 @@ def filter_huc10_list(hucs, prefix=None, sample_size=None, random_seed=None):
     if sample_size is not None:
         hucs = np.random.choice(hucs, size=sample_size, replace=False)
 
-    return hucs.to_list()
+    return hucs.tolist()
 
 
 def get_target_hucs(config):
