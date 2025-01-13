@@ -20,10 +20,10 @@ def get_output_paths(wildcards, prefix=""):
         'flowlines_raw': f"{output_base}/{prefix}{wildcards.hucid}/{wildcards.hucid}-flowlines_raw.shp",
         'dem': f"{output_base}/{prefix}{wildcards.hucid}/{wildcards.hucid}-dem.tif",
         'flowlines': f"{output_base}/{prefix}{wildcards.hucid}/{wildcards.hucid}-flowlines.shp",
-        'floors': f"{output_base}/floors/{wildcards.hucid}-floors.tif",
-        'flowlines_out': f"{output_base}/floors/{wildcards.hucid}-flowlines.shp",
-        'wp': f"{output_base}/floors/{wildcards.hucid}-wp.shp",
-        'log': f"{output_base}/floors/{wildcards.hucid}-run.log",
+        'floors': f"{output_base}/huc10_all/{wildcards.hucid}-floors.tif",
+        'flowlines_out': f"{output_base}/huc10_all/{wildcards.hucid}-flowlines.shp",
+        'wp': f"{output_base}/huc10_all/{wildcards.hucid}-wp.shp",
+        'log': f"{output_base}/huc10_all/{wildcards.hucid}-run.log",
         'working_dir': f"{output_base}/{prefix}{wildcards.hucid}_working_dir"
     }
 
@@ -31,12 +31,37 @@ def get_output_paths(wildcards, prefix=""):
 
 rule all:
     input:
-        expand(output_base / "floors" / "{hucid}-floors.tif", hucid=HUCIDS)
+        expand(output_base / "huc10_all" / "{hucid}-floors.tif", hucid=HUCIDS)
 
 rule prep_all:
     input:
         expand(output_base / "{hucid}/{hucid}-dem.tif", hucid=HUCIDS),
         expand(output_base / "{hucid}/{hucid}-flowlines.shp", hucid=HUCIDS)
+
+rule mosaic:
+    input:
+        floors_dir = os.path.join(config["output_base"], "huc10_all")
+    output:
+        mosaic_dir = directory(os.path.join(config["output_base"], "mosaic"))
+    shell:
+        "poetry run python src/mosaic.py "
+        "{input.floors_dir} "
+        "{output.mosaic_dir} "
+        "--level huc6 "
+        "--ocean-clip"  # Default true, explicitly set for clarity
+
+rule mosaic_ca:
+    input:
+        floors_dir = os.path.join(config["output_base"], "huc10_all")
+    output:
+        mosaic_dir = directory(os.path.join(config["output_base"], "mosaic_ca"))
+    shell:
+        "poetry run python src/mosaic.py "
+        "{input.floors_dir} "
+        "{output.mosaic_dir} "
+        "--level huc6 "
+        "--ocean-clip "  # Default true, explicitly set for clarity
+        "--state-boundary-clip" 
 
 rule download_data:
     params:
@@ -68,7 +93,7 @@ rule extract_valleys:
         wp_ofile = lambda wildcards: get_output_paths(wildcards)['wp'],
         log_file = lambda wildcards: get_output_paths(wildcards)['log']
     output:
-        output_base / "floors/{hucid}-floors.tif"
+        output_base / "huc10_all/{hucid}-floors.tif"
     shell:
         """
         poetry run python -m valleyx \

@@ -1,5 +1,5 @@
 # Output configuration
-output_base: '/dsl/valleys/cleanup/'
+output_base: '../20250108-HUC18_floors/'
 
 # Processing configuration
 params_file: 'params/params_10m.toml'
