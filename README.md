@@ -94,7 +94,7 @@ poetry run snakemake prep_all --configfile my_config.yaml -j 10 --resources down
 
 If its the first time, initialize whitebox tools:
 ```bash
-poetry run snakemake initialize_whitebox
+poetry run snakemake initialize_whitebox -j 1
 ```
 
 Process the downloaded data:
