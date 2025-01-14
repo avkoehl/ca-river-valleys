@@ -1,18 +1,19 @@
 # Snakefile
-# poetry run snakemake all --configfile config.yaml -j 1 -n
 from pathlib import Path
+import os
 
-from src.utils import get_target_hucs
-
-# Get target HUCs based on configuration
+# Try to get config-dependent variables, set defaults if no config
 try:
+    from src.utils import get_target_hucs
     HUCIDS = get_target_hucs(config)
-    print(f"Processing {len(HUCIDS)} HUCs") 
-except Exception as e:
-    print(f"Error determining HUCs to process: {e}")
-    raise
-
-output_base = Path(config['output_base'])
+    output_base = Path(config['output_base'])
+    params_file = config.get('params_file')
+except (NameError, KeyError) as e:
+    # Default values when no config is provided
+    HUCIDS = []
+    output_base = Path("output")
+    params_file = "default_params.yaml"
+    print("No config file provided - only config-independent rules will work")
 
 # Common output paths
 def get_output_paths(wildcards, prefix=""):
@@ -27,48 +28,13 @@ def get_output_paths(wildcards, prefix=""):
         'working_dir': f"{output_base}/{prefix}{wildcards.hucid}_working_dir"
     }
 
-## Rules
+## Rules that don't require config
 
 rule initialize_whitebox:
     output: 
         touch("whitebox_initialized.flag")
     shell:
         "poetry run python src/init_whitebox.py"
-
-
-rule extract_all:
-    input:
-        expand(output_base / "floors" / "{hucid}-floors.tif", hucid=HUCIDS)
-
-rule prep_all:
-    input:
-        expand(output_base / "{hucid}/{hucid}-dem.tif", hucid=HUCIDS),
-        expand(output_base / "{hucid}/{hucid}-flowlines.shp", hucid=HUCIDS)
-
-rule mosaic:
-    input:
-        floors_dir = os.path.join(config["output_base"], "floors")
-    output:
-        mosaic_dir = directory(os.path.join(config["output_base"], "mosaic"))
-    shell:
-        "poetry run python src/mosaic.py "
-        "{input.floors_dir} "
-        "{output.mosaic_dir} "
-        "--level huc6 "
-        "--ocean-clip"  # Default true, explicitly set for clarity
-
-rule mosaic_ca:
-    input:
-        floors_dir = os.path.join(config["output_base"], "floors")
-    output:
-        mosaic_dir = directory(os.path.join(config["output_base"], "mosaic_ca"))
-    shell:
-        "poetry run python src/mosaic.py "
-        "{input.floors_dir} "
-        "{output.mosaic_dir} "
-        "--level huc6 "
-        "--ocean-clip "  # Default true, explicitly set for clarity
-        "--state-boundary-clip" 
 
 rule download_data:
     params:
@@ -89,31 +55,82 @@ rule preprocess_nhd:
     shell:
         "poetry run python src/filter_nhd.py {input} {output}"
 
+## Rules that require config
+
+rule extract_all:
+    input:
+        expand(output_base / "floors" / "{hucid}-floors.tif", hucid=HUCIDS)
+    run:
+        if not HUCIDS:
+            raise ValueError("No HUCs specified - this rule requires a config file")
+
+rule prep_all:
+    input:
+        expand(output_base / "{hucid}/{hucid}-dem.tif", hucid=HUCIDS),
+        expand(output_base / "{hucid}/{hucid}-flowlines.shp", hucid=HUCIDS)
+    run:
+        if not HUCIDS:
+            raise ValueError("No HUCs specified - this rule requires a config file")
+
+rule mosaic:
+    input:
+        floors_dir = os.path.join(str(output_base), "floors")
+    output:
+        mosaic_dir = directory(os.path.join(str(output_base), "mosaic"))
+    run:
+        if not HUCIDS:
+            raise ValueError("This rule requires a config file")
+        shell(
+            "poetry run python src/mosaic.py "
+            "{input.floors_dir} "
+            "{output.mosaic_dir} "
+            "--level huc6 "
+            "--ocean-clip"
+        )
+
+rule mosaic_ca:
+    input:
+        floors_dir = os.path.join(str(output_base), "floors")
+    output:
+        mosaic_dir = directory(os.path.join(str(output_base), "mosaic_ca"))
+    run:
+        if not HUCIDS:
+            raise ValueError("This rule requires a config file")
+        shell(
+            "poetry run python src/mosaic.py "
+            "{input.floors_dir} "
+            "{output.mosaic_dir} "
+            "--level huc6 "
+            "--ocean-clip "
+            "--state-boundary-clip"
+        )
+
 rule extract_valleys:
     input:
         dem = output_base / "{hucid}/{hucid}-dem.tif",
-        network = output_base / "{hucid}/{hucid}-flowlines.shp"
-        whitebox_init = "whitebox_initialized.flag"
+        network = output_base / "{hucid}/{hucid}-flowlines.shp",
     params:
-        param_file = lambda wildcards: config['params_file'],
+        param_file = lambda wildcards: params_file,
         working_dir = lambda wildcards: get_output_paths(wildcards)['working_dir'],
         flowlines_ofile = lambda wildcards: get_output_paths(wildcards)['flowlines_out'],
         wp_ofile = lambda wildcards: get_output_paths(wildcards)['wp'],
         log_file = lambda wildcards: get_output_paths(wildcards)['log']
     output:
         output_base / "floors/{hucid}-floors.tif"
-    shell:
-        """
-        poetry run python -m valleyx \
-            --dem_file {input.dem} \
-            --flowlines_file {input.network} \
-            --working_dir {params.working_dir} \
-            --param_file {params.param_file} \
-            --floor_ofile {output} \
-            --flowlines_ofile {params.flowlines_ofile} \
-            --wp_ofile {params.wp_ofile} \
-            --enable_logging \
-            --log_file {params.log_file}
-         """
-
-## End of Snakefile
+    run:
+        if not params_file:
+            raise ValueError("This rule requires a config file with params_file specified")
+        shell(
+            """
+            poetry run python -m valleyx \
+                --dem_file {input.dem} \
+                --flowlines_file {input.network} \
+                --working_dir {params.working_dir} \
+                --param_file {params.param_file} \
+                --floor_ofile {output} \
+                --flowlines_ofile {params.flowlines_ofile} \
+                --wp_ofile {params.wp_ofile} \
+                --enable_logging \
+                --log_file {params.log_file}
+            """
+        )
