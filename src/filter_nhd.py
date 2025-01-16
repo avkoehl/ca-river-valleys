@@ -1,6 +1,5 @@
 import sys
 
-import pandas as pd
 import geopandas as gpd
 
 from utils import setup_output
