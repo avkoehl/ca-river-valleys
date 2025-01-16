@@ -73,8 +73,6 @@ rule prep_all:
             raise ValueError("No HUCs specified - this rule requires a config file")
 
 rule mosaic:
-    input:
-        floors_dir = os.path.join(str(output_base), "floors")
     output:
         mosaic_dir = directory(os.path.join(str(output_base), "mosaic"))
     run:
@@ -82,15 +80,13 @@ rule mosaic:
             raise ValueError("This rule requires a config file")
         shell(
             "poetry run python src/mosaic.py "
-            "{input.floors_dir} "
+            "{output_base}/floors "
             "{output.mosaic_dir} "
             "--level huc6 "
             "--ocean-clip"
         )
 
 rule mosaic_ca:
-    input:
-        floors_dir = os.path.join(str(output_base), "floors")
     output:
         mosaic_dir = directory(os.path.join(str(output_base), "mosaic_ca"))
     run:
@@ -98,7 +94,7 @@ rule mosaic_ca:
             raise ValueError("This rule requires a config file")
         shell(
             "poetry run python src/mosaic.py "
-            "{input.floors_dir} "
+            "{output_base}/floors "
             "{output.mosaic_dir} "
             "--level huc6 "
             "--ocean-clip "
