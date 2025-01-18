@@ -11,28 +11,33 @@ from utils import setup_output
 
 
 def get_dem_and_flowlines(hucid, layer):
-    # operates on the first geom in bounds
-    # this will not appropriately get data for hucs that are truly multi-part - e.g. island chains
     wbd = WBD(layer)
     boundary = wbd.byids(layer, hucid)
     boundary_reprojected = boundary.to_crs(3310)
 
     try:
-        dem = py3dep.static_3dep_dem(boundary.geometry.iloc[0], resolution=10, crs=4326)
+        dem = py3dep.static_3dep_dem(boundary.unary_union, resolution=10, crs=4326)
     except:
         dem = retry_on_smaller(boundary)
 
     dem = dem.rio.reproject("EPSG:3310", resampling=rasterio.enums.Resampling.bilinear)
     nhd_mr = NHD("flowline_mr")
-    flowlines_mr = nhd_mr.bygeom(boundary.geometry.iloc[0].bounds)
+    flowlines_mr = nhd_mr.bygeom(boundary.total_bounds)
     flowlines_mr = flowlines_mr.to_crs(3310)
-    flowlines_mr = flowlines_mr.clip(boundary_reprojected.geometry.iloc[0])
+    flowlines_mr = flowlines_mr.clip(boundary_reprojected.unary_union)
 
     return dem, flowlines_mr
 
 
 def retry_on_smaller(boundary):
-    bbox = boundary.bounds
+    bbox = pd.DataFrame(
+        {
+            "minx": [boundary.total_bounds[0]],
+            "miny": [boundary.total_bounds[1]],
+            "maxx": [boundary.total_bounds[2]],
+            "maxy": [boundary.total_bounds[3]],
+        }
+    )
     bbox["mid_x"] = (bbox["minx"] + bbox["maxx"]) / 2
     bbox["mid_y"] = (bbox["miny"] + bbox["maxy"]) / 2
 
