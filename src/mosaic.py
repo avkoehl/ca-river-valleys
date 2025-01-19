@@ -7,7 +7,6 @@ args:
 input_dir
 output_dir
 level = huc06 (or none, or huc2, huc4, huc6, huc8)
-ocean_clip = True
 state_boundary_clip = False
 """
 
@@ -37,12 +36,6 @@ def setup_parser():
         choices=["huc2", "huc4", "huc6", "huc8", None],
         default="huc6",
         help="HUC level to process (huc2, huc4, huc6, huc8, or None)",
-    )
-    parser.add_argument(
-        "--ocean-clip",
-        action="store_true",
-        default=True,
-        help="Enable ocean clipping (default: True)",
     )
     parser.add_argument(
         "--no-ocean-clip",
@@ -113,11 +106,8 @@ if __name__ == "__main__":
     parser = setup_parser()
     args = parser.parse_args()
 
-    if args.ocean_clip:
-        land_geoms = gpd.read_file("../data/s_05mr24/s_05mr24.shp")
-        land_geoms = land_geoms.to_crs("EPSG:3310")
     if args.state_boundary_clip:
-        us_geoms = gpd.read_file("../data/s_05mr24/s_05mr24.shp")
+        us_geoms = gpd.read_file("./data/s_05mr24/s_05mr24.shp")
         ca_state_geoms = us_geoms.loc[us_geoms["STATE"] == "CA"]
         ca_state_geoms = ca_state_geoms.to_crs("EPSG:3310")
 
@@ -128,9 +118,7 @@ if __name__ == "__main__":
         tif_files = floors.loc[floors["group"] == group, "filename"]
         binary_mosaic = mosaic(tif_files)
 
-        if args.ocean_clip:
-            binary_mosaic = clip_to_geometries(binary_mosaic, land_geoms)
         if args.state_boundary_clip:
             binary_mosaic = clip_to_geometries(binary_mosaic, ca_state_geoms)
 
-        binary_mosaic.rio.to_raster(f"{args.output_directory}/{group}-floors.tif")
+        binary_mosaic.rio.to_raster(f"{args.output_dir}/{group}-floors.tif")
