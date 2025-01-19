@@ -1,32 +1,39 @@
-import sys
+import os
 
+import pandas as pd
+import py3dep
+from rioxarray.merge import merge_arrays
+from pynhd import NHD
 import rasterio
 from pygeohydro import WBD
-from pynhd import NHD
-import py3dep
-import pandas as pd
-from rioxarray.merge import merge_arrays
-
-from utils import setup_output
+from shapely.geometry import box
 
 
-def get_dem_and_flowlines(hucid, layer):
+def get_boundary(hucid, layer="huc10"):
     wbd = WBD(layer)
     boundary = wbd.byids(layer, hucid)
-    boundary_reprojected = boundary.to_crs(3310)
+    return boundary["geometry"]
 
+
+def get_nhd(boundary):
+    nhd = NHD("flowline_mr")
+    flow = nhd.bygeom(boundary.total_bounds)
+    flow = flow.clip(boundary)
+    flow = flow[flow.geometry.type == "LineString"]
+    return flow
+
+
+def get_dem(boundary):
     try:
-        dem = py3dep.static_3dep_dem(boundary.unary_union, resolution=10, crs=4326)
+        dem = py3dep.static_3dep_dem(
+            box(*boundary.total_bounds), resolution=10, crs=4326
+        )
     except:
         dem = retry_on_smaller(boundary)
 
+    dem = dem.rio.clip(boundary)
     dem = dem.rio.reproject("EPSG:3310", resampling=rasterio.enums.Resampling.bilinear)
-    nhd_mr = NHD("flowline_mr")
-    flowlines_mr = nhd_mr.bygeom(boundary.total_bounds)
-    flowlines_mr = flowlines_mr.to_crs(3310)
-    flowlines_mr = flowlines_mr.clip(boundary_reprojected.unary_union)
-
-    return dem, flowlines_mr
+    return dem
 
 
 def retry_on_smaller(boundary):
@@ -80,20 +87,42 @@ def retry_on_smaller(boundary):
     return clipped
 
 
-def main():
-    hucid = sys.argv[1]
-    dem_path = sys.argv[2]
-    nhd_path = sys.argv[3]
+special_cases = pd.read_csv("../data/special_cases.csv")
+odir_base = "../../20250114/"
 
-    layer = "huc" + str(len(hucid))
-
-    dem, flowlines = get_dem_and_flowlines(hucid, layer)
-
-    [setup_output(fname) for fname in [dem_path, nhd_path]]
-
-    dem.rio.to_raster(dem_path)
-    flowlines.to_file(nhd_path)
+failures = []
 
 
-if __name__ == "__main__":
-    main()
+for idx, row in special_cases.iterrows():
+    hucid = row["huc"]
+    name = row["name"]
+    print(f"Processing {hucid}")
+
+    try:
+        boundary = get_boundary(hucid)
+        odir = f"{odir_base}/{hucid}"
+        os.makedirs(odir, exist_ok=True)
+    except Exception as e:
+        failures.append(
+            {"huc": hucid, "name": name, "reason": "failed on get_boundary"}
+        )
+        continue
+
+    try:
+        nhd = get_nhd(boundary)
+        nhd.to_file(f"{odir}/{hucid}-flowlines.shp")
+    except Exception as e:
+        failures.append({"huc": hucid, "name": name, "reason": "failed on get_nhd"})
+
+    try:
+        dem = get_dem(boundary)
+        dem.rio.to_raster(f"{odir}/{hucid}-dem.tif")
+    except Exception as e:
+        failures.append({"huc": hucid, "name": name, "reason": "failed on get_dem"})
+
+# Save failure log
+if failures:
+    pd.DataFrame(failures).to_csv("failed_hucs.csv", index=False)
+    print("\nFailed HUCs:")
+    for f in failures:
+        print(f"{f['huc']} ({f['name']}): {f['reason']}")
