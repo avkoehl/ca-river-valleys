@@ -1,15 +1,8 @@
-import os
-
 import numpy as np
 import pandas as pd
 
 
-def setup_output(filename):
-    directory = os.path.dirname(filename)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-def filter_huc10_list(hucs, prefix=None, sample_size=None, random_seed=None):
+def filter_huc_list(hucs, prefix=None, sample_size=None, random_seed=None):
     if prefix is not None:
         hucs = hucs[hucs.str.startswith(prefix)]
         if len(hucs) == 0:
@@ -39,4 +32,4 @@ def get_target_hucs(config):
         sample_size = config.get("sample_size")
         random_seed = config.get("random_seed")
 
-        return filter_huc10_list(hucs, prefix, sample_size, random_seed)
+        return filter_huc_list(hucs, prefix, sample_size, random_seed)
