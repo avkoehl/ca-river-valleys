@@ -30,4 +30,4 @@ if __name__ == "__main__":
 
     print("saving to files")
     combined_list = combined[["hucid", "states"]]
-    combined_list.to_csv("../data/target_huc10s.csv")
+    combined_list.to_csv("./data/target_huc10s.csv")
