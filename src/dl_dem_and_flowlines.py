@@ -1,5 +1,11 @@
+"""
+Download NHD flowlines and DEM for a given HUCID.
+"""
+
+import argparse
 import os
 
+import geopandas as gpd
 import pandas as pd
 import py3dep
 from rioxarray.merge import merge_arrays
@@ -7,31 +13,42 @@ from pynhd import NHD
 import rasterio
 from pygeohydro import WBD
 from shapely.geometry import box
+from shapely.geometry import Polygon
+from shapely.geometry import MultiPolygon
+
+
+def clip_out_ocean(boundary, land_df):
+    land_df = land_df.to_crs(boundary.crs)
+    boundary = boundary.clip(land_df)
+    return boundary
 
 
 def get_boundary(hucid, layer="huc10"):
     wbd = WBD(layer)
     boundary = wbd.byids(layer, hucid)
-    return boundary["geometry"]
+    return boundary["geometry"], boundary["states"]
 
 
 def get_nhd(boundary):
     nhd = NHD("flowline_mr")
-    flow = nhd.bygeom(boundary.total_bounds)
-    flow = flow.clip(boundary)
+    if isinstance(boundary, MultiPolygon):
+        bbox = box(*boundary.bounds)
+        flow = nhd.bygeom(bbox)
+        flow = flow.clip(boundary)
+    else:  # Polygon
+        flow = nhd.bygeom(boundary)
+
     flow = flow[flow.geometry.type == "LineString"]
+    flow = flow.to_crs("EPSG:3310")
     return flow
 
 
 def get_dem(boundary):
     try:
-        dem = py3dep.static_3dep_dem(
-            box(*boundary.total_bounds), resolution=10, crs=4326
-        )
+        dem = py3dep.static_3dep_dem(boundary, resolution=10, crs=4326)
     except:
         dem = retry_on_smaller(boundary)
 
-    dem = dem.rio.clip(boundary)
     dem = dem.rio.reproject("EPSG:3310", resampling=rasterio.enums.Resampling.bilinear)
     return dem
 
@@ -39,10 +56,10 @@ def get_dem(boundary):
 def retry_on_smaller(boundary):
     bbox = pd.DataFrame(
         {
-            "minx": [boundary.total_bounds[0]],
-            "miny": [boundary.total_bounds[1]],
-            "maxx": [boundary.total_bounds[2]],
-            "maxy": [boundary.total_bounds[3]],
+            "minx": [boundary.bounds[0]],
+            "miny": [boundary.bounds[1]],
+            "maxx": [boundary.bounds[2]],
+            "maxy": [boundary.bounds[3]],
         }
     )
     bbox["mid_x"] = (bbox["minx"] + bbox["maxx"]) / 2
@@ -87,42 +104,68 @@ def retry_on_smaller(boundary):
     return clipped
 
 
-special_cases = pd.read_csv("../data/special_cases.csv")
-odir_base = "../../20250114/"
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("hucid", type=str)
+    parser.add_argument("dem_ofile", type=str)
+    parser.add_argument("flowline_ofile", type=str)
+    parser.add_argument("us_land_file", type=str)
+    parser.add_argument("na_land_file", type=str)
+    args = parser.parse_args()
 
-failures = []
+    # get odirs from ofiles and create directories if they don't exist
+    dem_odir = os.path.dirname(args.dem_ofile)
+    flowline_odir = os.path.dirname(args.flowline_ofile)
+    if not os.path.exists(dem_odir):
+        os.makedirs(dem_odir)
+    if not os.path.exists(flowline_odir):
+        os.makedirs(flowline_odir)
 
+    boundary, states = get_boundary(args.hucid)
 
-for idx, row in special_cases.iterrows():
-    hucid = row["huc"]
-    name = row["name"]
-    print(f"Processing {hucid}")
+    # clip out ocean
+    # if MX in states us na_land_file, else us_land_file
+    # handle this smarter states is a series of strings
+    mx_flag = False
+    for element in states:
+        if "MX" in element:
+            mx_flag = True
 
-    try:
-        boundary = get_boundary(hucid)
-        odir = f"{odir_base}/{hucid}"
-        os.makedirs(odir, exist_ok=True)
-    except Exception as e:
-        failures.append(
-            {"huc": hucid, "name": name, "reason": "failed on get_boundary"}
-        )
-        continue
+    if mx_flag:
+        land_df = gpd.read_file(args.na_land_file)
+    else:
+        land_df = gpd.read_file(args.us_land_file)
+    boundary = clip_out_ocean(boundary, land_df)
 
+    # if boundary is geoseries, convert to shapely geometry
+    if isinstance(boundary, gpd.GeoSeries):
+        boundary = boundary.union_all()
+
+    if boundary is None:
+        raise ValueError("Boundary is empty")
+
+    if not isinstance(boundary, (Polygon, MultiPolygon)):
+        raise ValueError("Boundary is not a polygon, or multipolygon")
+
+    failed_nhd = False
+    failed_dem = False
     try:
         nhd = get_nhd(boundary)
-        nhd.to_file(f"{odir}/{hucid}-flowlines.shp")
+        nhd.to_file(args.flowline_ofile)
     except Exception as e:
-        failures.append({"huc": hucid, "name": name, "reason": "failed on get_nhd"})
+        failed_nhd = True
+        print(f"Failed to download NHD: {e}")
+        nhd = None
 
     try:
         dem = get_dem(boundary)
-        dem.rio.to_raster(f"{odir}/{hucid}-dem.tif")
+        dem.rio.to_raster(args.dem_ofile)
     except Exception as e:
-        failures.append({"huc": hucid, "name": name, "reason": "failed on get_dem"})
+        failed_dem = True
+        print(f"Failed to download DEM: {e}")
+        dem = None
 
-# Save failure log
-if failures:
-    pd.DataFrame(failures).to_csv("failed_hucs.csv", index=False)
-    print("\nFailed HUCs:")
-    for f in failures:
-        print(f"{f['huc']} ({f['name']}): {f['reason']}")
+    if failed_nhd or failed_dem:
+        raise ValueError(
+            f"Failed to download data: NHD_failed={failed_nhd}, DEM_failed={failed_dem}"
+        )
