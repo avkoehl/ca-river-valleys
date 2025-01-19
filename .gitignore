@@ -5,6 +5,7 @@ outputs/
 *.pdf
 cache/
 whitebox_initialized.flag
+data/north_america.*
 
 # vim
 [._]*.s[a-v][a-z]
