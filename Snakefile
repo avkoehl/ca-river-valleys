@@ -72,7 +72,7 @@ rule mosaic_ca:
 rule download_data:
     params:
         hucid = '{hucid}',
-        us_land_file = './data/s_05mr24/s_05mr24.shp',
+        us_land_file = './data/us_states.shp',
         na_land_file = './data/north_america.shp'
     output:
         dem = output_base / "{hucid}/{hucid}-dem.tif",
