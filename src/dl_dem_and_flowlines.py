@@ -19,6 +19,7 @@ from shapely.geometry import MultiPolygon
 
 def clip_out_ocean(boundary, land_df):
     land_df = land_df.to_crs(boundary.crs)
+    land_df = land_df.union_all()
     boundary = boundary.clip(land_df)
     return boundary
 
@@ -38,6 +39,7 @@ def get_nhd(boundary):
     else:  # Polygon
         flow = nhd.bygeom(boundary)
 
+    flow = flow.explode()
     flow = flow[flow.geometry.type == "LineString"]
     flow = flow.to_crs("EPSG:3310")
     return flow
