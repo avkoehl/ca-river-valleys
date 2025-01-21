@@ -87,6 +87,9 @@ Download DEMs and flowlines for the target HUCs:
 poetry run snakemake download --resources download_slots=4 --configfile my_config.yaml -j4
 ```
 
+This download rule is optional and is meant as a convenience to separate the download step from the processing step.
+If you run the processing step without downloading the data, the workflow will automatically download the data as needed.
+
 ### 3. Valley Floor Extraction
 
 Process the target HUCs to extract valley floors:

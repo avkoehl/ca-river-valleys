@@ -52,7 +52,7 @@ rule download:
 rule process:
     input:
         expand(
-             OUTPUT_DIR / "/floors/{hucid}-floors.tif",
+             OUTPUT_DIR / "floors" / "{hucid}-floors.tif",
             hucid=get_hucs()
         )
 
@@ -71,7 +71,7 @@ rule download_one:
         download_slots=1
     shell:
         "poetry run python src/dl_dem_and_flowlines.py "
-        "{widlcards.hucid} {output.dem} {output.flowlines} "
+        "{wildcards.hucid} {output.dem} {output.flowlines} "
         "{input.us_land_file} {input.na_land_file}"
 
 rule process_one:
@@ -85,7 +85,7 @@ rule process_one:
         wp_ofile = OUTPUT_DIR / "{hucid}/{hucid}-wp.shp",
         log_ofile = OUTPUT_DIR / "{hucid}/{hucid}-run.log",
     output:
-        valleys = OUTPUT_DIR / "{hucid}/{hucid}-floors.tif"
+        valleys = OUTPUT_DIR / "floors" / "{hucid}-floors.tif"
     shell:
         """
         "poetry run python -m valleyx \
