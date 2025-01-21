@@ -1,0 +1,3 @@
+output_dir: './output/' # root directory for output
+params_file: 'params/params_10m.toml' # parameter file for valleyx
+hucs_file: './data/target_huc10s.csv' # csv with column hucid

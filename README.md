@@ -44,74 +44,64 @@ poetry install
 poetry install --with dev
 ```
 
-## Configuration
-
-### Basic Setup
-
-1. Copy and edit the configuration file:
-```bash
-cp config.yaml my_config.yaml
-```
-
-2. Configure the output directory in `my_config.yaml`:
-```yaml
-output_base: '/path/to/your/output/directory/'
-```
-
-### HUC Selection
-
-The workflow supports three methods for selecting HUC regions (configure only one):
-
-1. Single HUC:
-```yaml
-huc_id: '18050002'
-```
-
-2. Multiple specific HUCs:
-```yaml
-huc_ids:
-  - '1802016306'
-  - '1804001211'
-```
-
-3. HUC manifest file:
-```yaml
-huc_manifest: './data/target_huc10s.csv'
-prefix: '18'          # Optional: Filter by prefix
-sample_size: 5        # Optional: Sample size
-random_seed: 14       # Optional: Random seed
-```
-
 ## Workflow Steps
 
-### 1. Data Preparation
-Download DEMs and flowlines:
+The workflow below outlines the steps to generate valley floor polygons for all the huc10s in California.
+
+### 1. Setup and Configuration
+
+#### Setup 
+Run the setup rule to initialize whitebox, download necessary data files such as the land masks
 ```bash
-poetry run snakemake prep_all --configfile my_config.yaml -j 10 --resources download_slots=10
+poetry run snakemake setup -j1
 ```
 
-### 2. Valley Floor Extraction
-
-If its the first time, initialize whitebox tools:
+To generate the list of all HUCs in California. This is optional if you already have a list of HUCs you want to process.
 ```bash
-poetry run snakemake initialize_whitebox -j 1
+poetry run snakemake generate_targets -j1
 ```
 
-Process the downloaded data:
+#### Configuration 
 
+Copy the default configuration file:
 ```bash
-poetry run snakemake extract_all --configfile my_config.yaml -j 10
+cp config.yaml.example my_config.yaml
 ```
 
-### 3. Results Processing
+Edit the configuration file to set the hucs_file, params_file, and output_dir for the run:
+```yaml
+output_dir: "/path/to/output"
+hucs_file: "/path/to/hucs.csv"
+params_file: "/path/to/params.toml"
+```
 
-#### Option A: California-specific mosaic
+Alternatively, you can set these variables using the `--config` flag when running snakemake. e.g.:
+```bash
+poetry run snakemake process --config hucs_file=./data/target_huc10s.csv params_file=params/my_params.toml output_dir=./data/output -j 4
+```
+
+### 2. Download DEM and Flowline Data
+
+Download DEMs and flowlines for the target HUCs:
+```bash
+poetry run snakemake download --resources download_slots=4 --configfile my_config.yaml -j4
+```
+
+### 3. Valley Floor Extraction
+
+Process the target HUCs to extract valley floors:
+
+```bash
+poetry run snakemake process --configfile my_config.yaml -j4
+```
+
+### 4. Results Processing
+
 Mosaic results and clip to California boundary (includes ocean clipping):
 ```bash
 poetry run snakemake mosaic_ca
 ```
 
-#### Option B: General mosaic
 Mosaic results with ocean clipping only:
 ```bash
 poetry run snakemake mosaic
@@ -133,10 +123,10 @@ params_file: 'params/my_params.toml'
 
 ```
 ca-valley-floors/
-├── config.yaml          # Main configuration file
+├── Snakefile            # Snakemake workflow file
 ├── params/             
-│   └── params_10m.toml  # Valley floor extraction parameters
-├── data/                # Input data directory
+│   └── params_10m.toml  # Valley floor extraction parameters for 10m DEMs
+├── data/                # Data directory for files used in the workflow
 └── README.md           
 ```
 
