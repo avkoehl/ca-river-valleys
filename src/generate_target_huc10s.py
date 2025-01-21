@@ -14,13 +14,14 @@ from pygeohydro.watershed import huc_wb_full
 # dataset some simply do not have any flowlines (e.g. Farallon Islands
 # 1805000506) and others are entirely outside the US (e.g 1807030506 in Mexico)
 IGNORE_LIST = [
-    "1805000506",
+    "1805000506",  # farallon islands no flowlines
     "1807030501",
     "1807030502",
     "1807030503",
     "1807030504",
     "1807030506",
     "1807030507",
+    "1710031206",  # oregon coast no flowlines
 ]
 
 if __name__ == "__main__":
