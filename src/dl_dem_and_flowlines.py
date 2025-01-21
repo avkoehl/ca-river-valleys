@@ -130,6 +130,7 @@ if __name__ == "__main__":
     for element in states:
         if "MX" in element:
             mx_flag = True
+            break
 
     if mx_flag:
         land_df = gpd.read_file(args.na_land_file)

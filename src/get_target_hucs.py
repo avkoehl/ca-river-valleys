@@ -32,4 +32,5 @@ def get_target_hucs(config):
         sample_size = config.get("sample_size")
         random_seed = config.get("random_seed")
 
-        return filter_huc_list(hucs, prefix, sample_size, random_seed)
+        hucs = filter_huc_list(hucs, prefix, sample_size, random_seed)
+        return hucs
