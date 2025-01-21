@@ -46,17 +46,22 @@ poetry install --with dev
 
 ## Workflow Steps
 
-The workflow below outlines the steps to generate valley floor polygons for all the huc10s in California.
+The workflow below outlines the steps to generate valley floor polygons for all
+the huc10s in California.
 
 ### 1. Setup and Configuration
 
 #### Setup 
-Run the setup rule to initialize whitebox, download necessary data files such as the land masks
+Run the setup rule to initialize whitebox, download necessary data files such
+as the land masks. 
 ```bash
 poetry run snakemake setup -j1
 ```
 
-To generate the list of all HUCs in California. This is optional if you already have a list of HUCs you want to process.
+To generate the list of all HUCs in California. This is optional if you already
+have a list of HUCs you want to process. It will save the list of HUCs to a
+file called `data/target_huc10s.csv`.
+
 ```bash
 poetry run snakemake generate_targets -j1
 ```
@@ -87,8 +92,10 @@ Download DEMs and flowlines for the target HUCs:
 poetry run snakemake download --resources download_slots=4 --configfile my_config.yaml -j4
 ```
 
-This download rule is optional and is meant as a convenience to separate the download step from the processing step.
-If you run the processing step without downloading the data, the workflow will automatically download the data as needed.
+This download rule is optional and is meant as a convenience to separate the
+download step from the processing step. If you run the processing step without
+downloading the data, the workflow will automatically download the data as
+needed.
 
 ### 3. Valley Floor Extraction
 
