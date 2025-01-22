@@ -78,22 +78,25 @@ rule process_one:
     input:
         dem = OUTPUT_DIR / "{hucid}/{hucid}-dem.tif",
         flowlines = OUTPUT_DIR / "{hucid}/{hucid}-flowlines.shp",
-        whitebox_init = "data/whitebox_init.txt"
+        whitebox_init = "data/whitebox_init.txt",
     params:
+        working_dir = lambda wildcards: OUTPUT_DIR / f"{wildcards.hucid}_working_dir",
         param_file = PARAMS_FILE,
-        working_dir = OUTPUT_DIR / "{hucid}/{hucid}_working_dir",
-        wp_ofile = OUTPUT_DIR / "{hucid}/{hucid}-wp.shp",
-        log_ofile = OUTPUT_DIR / "{hucid}/{hucid}-run.log",
     output:
-        valleys = OUTPUT_DIR / "floors" / "{hucid}-floors.tif"
+        floor_ofile = OUTPUT_DIR / "floors" / "{hucid}-floors.tif",
+        wp_ofile = OUTPUT_DIR / "floors" / "{hucid}-wp.shp",
+        flowlines_ofile = OUTPUT_DIR / "floors" / "{hucid}-flowlines.shp",
+        log_file = OUTPUT_DIR / "floors" / "{hucid}-run.log"
     shell:
         """
-        "poetry run python -m valleyx \
+        poetry run python -m valleyx \
         --dem_file {input.dem} \
         --flowlines_file {input.flowlines} \
         --param_file {params.param_file} \
-        --wp_ofile {params.wp_ofile} \
+        --working_dir {params.working_dir} \
+        --wp_ofile {output.wp_ofile} \
+        --flowlines_ofile {output.flowlines_ofile} \
         --enable_logging \
-        --log_ofile {params.log_ofile} \
-        --floor_ofile {output.valleys}
+        --log_file {output.log_file} \
+        --floor_ofile {output.floor_ofile} 
         """
