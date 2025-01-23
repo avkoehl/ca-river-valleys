@@ -5700,7 +5700,7 @@ whitebox = "^2.3.5"
 type = "git"
 url = "ssh://git@github.com/avkoehl/valleyx.git"
 reference = "main"
-resolved_reference = "30b4531940f85c326979a9f7dab3981d9651d0cc"
+resolved_reference = "96aba0ecc51968fa9b2abc7dc4bb60b84d4c77d0"
 
 [[package]]
 name = "wcwidth"
