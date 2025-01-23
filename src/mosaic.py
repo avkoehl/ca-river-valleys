@@ -6,7 +6,7 @@ optional clip to california state boundary
 args:
 input_dir
 output_dir
-level = huc06 (or none, or huc2, huc4, huc6, huc8)
+level = huc6 (or none, or huc2, huc4, huc6, huc8)
 state_boundary_clip = False
 """
 
@@ -14,12 +14,15 @@ import argparse
 import os
 from glob import glob
 
+import xarray as xr
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import rasterio
-from rasterio.merge import merge
 import rioxarray as rxr
+from rasterio.merge import merge
+from shapely.geometry import shape
+import rasterio.features
 
 
 def setup_parser():
@@ -35,9 +38,10 @@ def setup_parser():
     # Optional arguments
     parser.add_argument(
         "--level",
-        choices=["huc2", "huc4", "huc6", "huc8", None],
-        default="huc6",
-        help="HUC level to process (huc2, huc4, huc6, huc8, or None)",
+        type=str,
+        choices=["huc2", "huc4", "huc6", "huc8"],
+        default=None,
+        help="HUC level to process (huc2, huc4, huc6, huc8)",
     )
 
     parser.add_argument(
@@ -46,34 +50,41 @@ def setup_parser():
         default=False,
         help="Enable state boundary clipping (default: False)",
     )
+    parser.add_argument(
+        "--watershed-boundary-clip",
+        action="store_true",
+        default=False,
+        help="Enable watershed boundary clipping (default: False)",
+    )
 
     return parser
 
 
 def mosaic(tif_files):
     src_files = [rasterio.open(f) for f in tif_files]
-    mosaic, out_t = merge(src_files)
+    mosaic, out_transform = merge(src_files)
 
-    binary = np.where(mosaic[0] > 0, 1, 0)
+    src_crs = src_files[0].crs
     for src in src_files:
         src.close()
-        with rasterio.open(tif_files.iloc[0]) as src:
-            out_meta = src.meta.copy()
-        out_meta.update(
-            {"height": binary.shape[0], "width": binary.shape[1], "transform": out_t}
-        )
 
-    with rasterio.open("temp_binary.tif", "w", **out_meta) as dst:
-        dst.write(binary.astype(rasterio.float32), 1)
+    mosaic = mosaic.squeeze()
+    mosaic = mosaic.astype(np.uint8)
+    mosaic[mosaic > 0] = 1
 
-    binary = rxr.open_rasterio("temp_binary.tif", masked=True)
-    binary = binary.squeeze()
-    binary = binary.fillna(255)
-    binary = binary.rio.write_nodata(255)
-    binary = binary.astype(np.uint8)
+    da = xr.DataArray(
+        mosaic,
+        dims=["y", "x"],
+        coords={
+            "y": np.arange(mosaic.shape[0]) * out_transform.e + out_transform.f,
+            "x": np.arange(mosaic.shape[1]) * out_transform.a + out_transform.c,
+        },
+    )
 
-    os.remove("temp_binary.tif")
-    return binary
+    da = da.rio.write_transform(out_transform)
+    da = da.rio.write_crs(src_crs)
+    da = da.rio.write_nodata(255)
+    return da
 
 
 def load_floor_files(input_dir, level):
@@ -122,16 +133,38 @@ if __name__ == "__main__":
     os.makedirs(args.output_dir, exist_ok=True)
 
     floors = load_floor_files(args.input_dir, args.level)
+
+    if args.watershed_boundary_clip:
+        floors = floors[floors["huc10"].str.startswith("18")]
+
     for group in floors["group"].unique():
         tif_files = floors.loc[floors["group"] == group, "filename"]
+
         binary_mosaic = mosaic(tif_files)
 
         if args.state_boundary_clip:
             ca = usa.loc[usa["STATE"] == "CA", "geometry"]
             ca = ca.to_crs(binary_mosaic.rio.crs)
-            binary_mosaic = binary_mosaic.rio.clip(ca)
+            binary_mosaic = binary_mosaic.rio.clip(ca, drop=True, from_disk=True)
         else:
             mask = land_mask(na, usa)
-            binary_mosaic = binary_mosaic.rio.clip(mask.geometry)
+            mask = mask.to_crs(binary_mosaic.rio.crs)
+            binary_mosaic = binary_mosaic.rio.clip(
+                mask.geometry, drop=True, from_disk=True
+            )
 
-        binary_mosaic.rio.to_raster(f"{args.output_dir}/{group}-floors.tif")
+        binary_mosaic.rio.to_raster(
+            f"{args.output_dir}/{group}-floors.tif",
+            driver="COG",
+            dtype="uint8",
+            compress="lzw",
+            nodata=255,
+        )
+        print(f"Saved {args.output_dir}/{group}-floors.tif")
+        shapes = rasterio.features.shapes(
+            binary_mosaic.values, transform=binary_mosaic.rio.transform()
+        )
+        geoms = [shape(s) for s, v in shapes if v == 1]
+        geoms = gpd.GeoDataFrame(geometry=geoms, crs=binary_mosaic.rio.crs)
+        geoms.to_file(f"{args.output_dir}/{group}-floors.gpkg", driver="GPKG")
+        print(f"Saved {args.output_dir}/{group}-floors.gpkg")
