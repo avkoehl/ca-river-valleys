@@ -13,6 +13,35 @@ This project uses [valleyx](https://github.com/avkoehl/valleyx) to extract valle
 The workflow processes data by Hydrologic Unit Code (HUC) regions, allowing for
 flexible regional analysis and parallel processing.
 
+## Coverage
+
+There are 1070 HUC10s genereated by the filtering in the `generate_targets` rule. 
+These include all HUC10s that are within the California Region (HUC2: 18) and
+all the HUC10s that have CA as part of their state attribute.  
+
+Some HUC10s are not processed due to missing data as a result of:
+- No flowlines in the region (e.g. Farallon Islands)
+- No DEM or flowlines data available (outside of the US)
+
+```python
+IGNORE_LIST = [
+    "1805000506",  # farallon islands no flowlines
+    "1807030501",
+    "1807030502",
+    "1807030503",
+    "1807030504",
+    "1807030506",
+    "1807030507",
+    "1710031206",  # oregon coast no flowlines
+]
+```
+
+![HUC10 Coverage](/imgs/coverage.png)
+A map of the coverage. Huc10 boundaries are black, floors are colored by their
+huc06 region. Notice that there are no floors in the farallon islands, oregon
+coast, and in Mexico.
+
+
 ## Features
 
 - Automated downloading of DEM and flowline data
