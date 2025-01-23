@@ -105,16 +105,12 @@ Process the target HUCs to extract valley floors:
 poetry run snakemake process --configfile my_config.yaml -j4
 ```
 
-### 4. Results Processing
+### 4. Results Post Processing
 
-Mosaic results and clip to California boundary (includes ocean clipping):
-```bash
-poetry run snakemake mosaic_ca
-```
+Mosaic results and clip to California boundary:
 
-Mosaic results with ocean clipping only:
 ```bash
-poetry run snakemake mosaic
+poetry run snakemake mosaic --configfile my_config.yaml -j1
 ```
 
 ## Customizing Valley Floor Parameters
