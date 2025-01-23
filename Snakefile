@@ -57,8 +57,20 @@ rule process:
         )
 
 # postprocess
-# TODO: mosaic to state bounds and to watershed bounds
-
+rule mosaic:
+    input:
+        floors = expand(OUTPUT_DIR / "floors" / "{hucid}-floors.tif", hucid=get_hucs()),
+        us_land_file = "data/us_states.shp",
+        na_land_file = "data/north_america.shp"
+    output:
+        directory(OUTPUT_DIR / "mosaic_ca_watershed"),
+        directory(OUTPUT_DIR / "mosaic_ca_state")
+    shell:
+        """
+        mkdir -p {output}
+        poetry run python src/mosaic.py {OUTPUT_DIR}/floors {OUTPUT_DIR}/mosaic_ca_state {input.na_land_file} {input.us_land_file} --level huc6 --state-boundary-clip
+        poetry run python src/mosaic.py {OUTPUT_DIR}/floors {OUTPUT_DIR}/mosaic_ca_watershed {input.na_land_file} {input.us_land_file} --level huc6
+        """
 
 rule download_one:
     input:
